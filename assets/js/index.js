@@ -31,25 +31,26 @@ function playRandomMusic(){
     window.__audio = new Audio(nextSong.url);
     window.__audio.onended = playRandomMusic;
 
-        // Hiển thị thanh nhạc đang phát (responsive cho mobile)
+           // Hiển thị hộp nhạc nhỏ gọn (responsive)
     window.__audio.play().then(() => {
         console.log(`✓ Đang phát: ${nextSong.title}`);
 
-        // Xóa thanh cũ nếu có
-        $("#current-song").remove();
+        $("#current-song").remove(); // xóa hộp cũ nếu có
 
         let html = `
-            <div id="current-song" style="position:fixed; bottom:0; left:0; right:0; background:rgba(0,0,0,0.95); color:#fff; padding:10px 15px; z-index:9999; display:flex; align-items:center; gap:12px; font-size:14px; border-top:1px solid #444; box-shadow: 0 -2px 10px rgba(0,0,0,0.4);">
-                <div style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:10px;">
-                    🎵 <span id="now-playing-title">${nextSong.title}</span>
-                </div>
+            <div id="current-song" style="position:fixed; bottom:15px; left:15px; background:rgba(0,0,0,0.92); color:#fff; padding:12px 16px; border-radius:12px; z-index:9999; 
+                display:flex; align-items:center; gap:12px; min-width:280px; max-width:380px; box-shadow:0 4px 15px rgba(0,0,0,0.5); font-size:14px;">
                 
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <button id="music-pause" style="background:none; border:none; color:#fff; font-size:22px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; padding:0;">⏸</button>
-                    <button id="music-next" style="background:none; border:none; color:#fff; font-size:22px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; padding:0;">⏭</button>
+                <div style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    🎵 <span id="now-playing-title" style="font-weight:500;">${nextSong.title}</span>
                 </div>
-                
-                <button id="music-close" style="background:none; border:none; color:#aaa; font-size:20px; margin-left:5px;">✕</button>
+
+                <div style="display:flex; gap:6px;">
+                    <button id="music-pause" style="background:none; border:none; color:#fff; font-size:24px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; padding:0;">⏸</button>
+                    <button id="music-next" style="background:none; border:none; color:#fff; font-size:24px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; padding:0;">⏭</button>
+                </div>
+
+                <button id="music-close" style="background:none; border:none; color:#aaa; font-size:20px; margin-left:4px;">✕</button>
             </div>
         `;
 
@@ -72,7 +73,7 @@ function playRandomMusic(){
             playRandomMusic();
         });
 
-        // Nút đóng
+        // Nút đóng hộp nhạc
         $("#music-close").on("click", function() {
             if (window.__audio) window.__audio.pause();
             $("#current-song").fadeOut(300, function() { $(this).remove(); });
