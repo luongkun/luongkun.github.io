@@ -47,21 +47,19 @@ function playRandomMusic(){
 `;
         $("body").append(iconHTML);
 
-        // Tạo Player đầy đủ (ẩn ban đầu)
+        // Player chính
         let playerHTML = `
-            <div id="music-player" style="position:fixed; bottom:90px; right:20px; width:320px; background:rgba(20,20,20,0.98); color:#fff; border-radius:16px; padding:16px; z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.7); display:none;">
-                
+            <div id="music-player" style="position:fixed; bottom:90px; right:20px; width:340px; background:rgba(20,20,20,0.98); color:#fff; border-radius:16px; padding:16px; z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.7); display:none;">
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                    <div style="width:50px; height:50px; background:#333; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px;">♫</div>
-                    <div style="flex:1;">
-                        <div id="player-title" style="font-weight:600; font-size:15px;">${nextSong.title}</div>
-                        <div style="font-size:12px; color:#aaa;">Đang phát</div>
+                    <div style="width:48px; height:48px; background:#333; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:26px;">♫</div>
+                    <div style="flex:1; min-width:0;">
+                        <div id="player-title" style="font-weight:600; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nextSong.title}</div>
+                        <div id="player-status" style="font-size:12.5px; color:#aaa;">Đang phát</div>
                     </div>
-                    <button id="player-close" style="background:none; border:none; color:#aaa; font-size:22px;">✕</button>
+                    <button id="player-close" style="background:none; border:none; color:#aaa; font-size:24px; padding:4px;">✕</button>
                 </div>
 
-                <!-- Thanh tiến trình -->
-                <div style="margin:15px 0;">
+                <div style="margin:16px 0 12px 0;">
                     <input type="range" id="progress-bar" min="0" max="100" value="0" style="width:100%; accent-color:#ff4d94;">
                     <div style="display:flex; justify-content:space-between; font-size:11px; color:#888; margin-top:4px;">
                         <span id="current-time">0:00</span>
@@ -69,52 +67,74 @@ function playRandomMusic(){
                     </div>
                 </div>
 
-                <!-- Nút điều khiển -->
-                <div style="display:flex; justify-content:center; gap:20px; margin-top:10px;">
-                    <button id="player-prev" style="background:none; border:none; color:#ccc; font-size:28px;">⏮</button>
-                    <button id="player-pause" style="background:#fff; color:#000; border:none; width:56px; height:56px; border-radius:50%; font-size:28px; display:flex; align-items:center; justify-content:center;">⏸</button>
-                    <button id="player-next" style="background:none; border:none; color:#ccc; font-size:28px;">⏭</button>
+                <div style="display:flex; justify-content:center; gap:24px; align-items:center;">
+                    <button id="player-prev" style="background:none; border:none; color:#bbb; font-size:26px;">⏮</button>
+                    <button id="player-pause" style="background:#fff; color:#000; border:none; width:58px; height:58px; border-radius:50%; font-size:28px; display:flex; align-items:center; justify-content:center;">⏸</button>
+                    <button id="player-next" style="background:none; border:none; color:#bbb; font-size:26px;">⏭</button>
                 </div>
             </div>
         `;
         $("body").append(playerHTML);
 
-        // === XỬ LÝ SỰ KIỆN ===
+        const audio = window.__audio;
         const player = $("#music-player");
         const icon = $("#music-icon");
+        const progressBar = $("#progress-bar");
+        let isDragging = false;
 
-        // Click icon → hiện/ẩn player
-        icon.on("click", function() {
-            player.fadeToggle(200);
-        });
+        // Mở/đóng player bằng icon
+        icon.on("click", () => player.fadeToggle(200));
 
-        // Nút Close
-        $("#player-close").on("click", function() {
-            player.fadeOut(200);
-        });
+        // Nút Close → chỉ ẩn khi người dùng chủ động nhấn
+        $("#player-close").on("click", () => player.fadeOut(200));
 
-        // Nút Play/Pause
+        // Play / Pause
         $("#player-pause").on("click", function() {
-            if (window.__audio.paused) {
-                window.__audio.play();
+            if (audio.paused) {
+                audio.play();
                 $(this).html("⏸");
             } else {
-                window.__audio.pause();
+                audio.pause();
                 $(this).html("▶");
             }
         });
 
-        // Nút Next
+        // Next - CHUYỂN BÀI NHƯNG KHÔNG ẨN HỘP
         $("#player-next").on("click", function() {
-            if (window.__audio) window.__audio.pause();
+            if (audio) audio.pause();
+            playRandomMusic();   // Chuyển bài mới, hộp vẫn giữ nguyên
+        });
+
+        // Prev
+        $("#player-prev").on("click", function() {
+            if (audio) audio.pause();
             playRandomMusic();
         });
 
-        // Nút Prev (tạm thời next vì chưa có playlist ngược)
-        $("#player-prev").on("click", function() {
-            if (window.__audio) window.__audio.pause();
-            playRandomMusic();
+        // Cập nhật tiến trình
+        audio.ontimeupdate = function() {
+            if (!isDragging && audio.duration) {
+                let progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.val(progress);
+                $("#current-time").text(formatTime(audio.currentTime));
+                $("#total-time").text(formatTime(audio.duration));
+            }
+        };
+
+        progressBar.on("input", () => isDragging = true);
+        progressBar.on("change", function() {
+            if (audio.duration) {
+                audio.currentTime = (progressBar.val() / 100) * audio.duration;
+            }
+            isDragging = false;
         });
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "0:00";
+            let min = Math.floor(seconds / 60);
+            let sec = Math.floor(seconds % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
 
     }).catch(err => {
         console.error("Lỗi phát nhạc:", err);
