@@ -41,10 +41,10 @@ function playRandomMusic(){
 
         // Tạo icon nhạc thu gọn (luôn hiển thị)
         let iconHTML = `
-            <div id="music-icon" style="position:fixed; bottom:20px; right:20px; width:56px; height:56px; background:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:10000; box-shadow:0 4px 15px rgba(0,0,0,0.6); cursor:pointer; border:3px solid #fff;">
-                ♫
-            </div>
-        `;
+    <div id="music-icon" style="position:fixed; bottom:20px; right:20px; width:60px; height:60px; background:#111; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:10000; box-shadow:0 8px 25px rgba(255, 77, 148, 0.6); cursor:pointer; border:2px solid #ff4d94;">
+        <img src="https://res.cloudinary.com/dhvnls5ys/image/upload/v1775552209/music-note-in-a-circle_jn7gqv.png" width="34" height="34" style="filter: brightness(0) invert(1);">
+    </div>
+`;
         $("body").append(iconHTML);
 
         // Tạo Player đầy đủ (ẩn ban đầu)
