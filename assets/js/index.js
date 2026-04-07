@@ -31,17 +31,56 @@ function playRandomMusic(){
     window.__audio = new Audio(nextSong.url);
     window.__audio.onended = playRandomMusic;
 
+        // Hiển thị thanh nhạc đang phát (responsive cho mobile)
     window.__audio.play().then(() => {
-        let s = $("#current-song");
-        if(s.length){
-            s.text("🎵 " + nextSong.title).fadeIn();
-        } else {
-            $("body").append(`<div id="current-song" style="position:fixed;bottom:20px;left:20px;background:#000;color:#fff;padding:8px 12px;border-radius:8px;z-index:9999;">🎵 ${nextSong.title}</div>`);
-        }
-        console.log(`🎵 Đang phát: ${nextSong.title}`);
+        console.log(`✓ Đang phát: ${nextSong.title}`);
+
+        // Xóa thanh cũ nếu có
+        $("#current-song").remove();
+
+        let html = `
+            <div id="current-song" style="position:fixed; bottom:0; left:0; right:0; background:rgba(0,0,0,0.95); color:#fff; padding:10px 15px; z-index:9999; display:flex; align-items:center; gap:12px; font-size:14px; border-top:1px solid #444; box-shadow: 0 -2px 10px rgba(0,0,0,0.4);">
+                <div style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:10px;">
+                    🎵 <span id="now-playing-title">${nextSong.title}</span>
+                </div>
+                
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button id="music-pause" style="background:none; border:none; color:#fff; font-size:22px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; padding:0;">⏸</button>
+                    <button id="music-next" style="background:none; border:none; color:#fff; font-size:22px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; padding:0;">⏭</button>
+                </div>
+                
+                <button id="music-close" style="background:none; border:none; color:#aaa; font-size:20px; margin-left:5px;">✕</button>
+            </div>
+        `;
+
+        $("body").append(html);
+
+        // Nút Pause / Play
+        $("#music-pause").on("click", function() {
+            if (window.__audio.paused) {
+                window.__audio.play();
+                $(this).html("⏸");
+            } else {
+                window.__audio.pause();
+                $(this).html("▶");
+            }
+        });
+
+        // Nút Next
+        $("#music-next").on("click", function() {
+            if (window.__audio) window.__audio.pause();
+            playRandomMusic();
+        });
+
+        // Nút đóng
+        $("#music-close").on("click", function() {
+            if (window.__audio) window.__audio.pause();
+            $("#current-song").fadeOut(300, function() { $(this).remove(); });
+        });
+
     }).catch(err => {
         console.error("Lỗi phát nhạc:", err);
-        setTimeout(playRandomMusic, 800);
+        setTimeout(playRandomMusic, 1000);
     });
 }
 
