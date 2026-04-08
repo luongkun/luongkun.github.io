@@ -1,5 +1,8 @@
 !function(n){function t(n,t,e){let i=new Date(Date.now()+864e5*e).toUTCString();document.cookie=`${n}=${t}; expires=${i}; path=/`}function e(n){let t=document.cookie.split("; ").reduce((n,t)=>{let[e,i]=t.split("=");return n[e]=i,n},{});return t[n]}function i(n){let e=$(".ri-sun-line"),i=$(".ri-moon-clear-line");"light"===n?($("html").removeClass("dark").addClass("light"),i.slideUp(300,function(){e.slideDown(300)}),t("theme","light",365)):($("html").removeClass("light").addClass("dark"),e.slideUp(300,function(){i.slideDown(300)}),t("theme","dark",365))}let h=e("theme");"light"===h?i("light"):i("dark"),$("body").on("click",".change-theme",function(){let n=$("html").hasClass("dark");i(n?"light":"dark")});
-
+// Reset toast khi reload trang (dùng cho lúc test)
+if (window.location.href.includes("reload=1") || confirm("Reset thông báo nhạc?")) {
+    document.cookie = "toast=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+}
 // ==================== TOAST PROMPT + PHÁT NHẠC (SỬA LỖI) ====================
 if("close"===e("toast"))$("#toast-prompt").hide();
 
@@ -47,15 +50,13 @@ function playRandomMusic(){
 `;
         $("body").append(iconHTML);
 
-        // ==================== PLAYER CHÍNH ====================
-        let playerIcon = "https://i.ibb.co/0jZ0Z0Z/music-note-icon.png";     // ← THAY LINK ICON NÀY (trong player)
-
+        // Player với icon đẹp hơn
         let playerHTML = `
             <div id="music-player" style="position:fixed; bottom:90px; right:20px; width:340px; background:rgba(20,20,20,0.98); color:#fff; border-radius:16px; padding:16px; z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.7); display:none;">
                 
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
                     <div style="width:48px; height:48px; background:#222; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                        <img src="${playerIcon}" width="32" height="32" style="filter: brightness(0) invert(1);">
+                        <img src="${floatingIcon}" width="32" height="32" style="filter: brightness(0) invert(1);">
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div id="player-title" style="font-weight:600; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nextSong.title}</div>
@@ -72,16 +73,17 @@ function playRandomMusic(){
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:center; gap:24px; align-items:center;">
-                    <button id="player-prev" style="background:none; border:none; color:#bbb; font-size:28px;">⏮</button>
-                    <button id="player-pause" style="background:#fff; color:#000; border:none; width:58px; height:58px; border-radius:50%; font-size:28px; display:flex; align-items:center; justify-content:center;">⏸</button>
-                    <button id="player-next" style="background:none; border:none; color:#bbb; font-size:28px;">⏭</button>
+                <!-- Nút điều khiển với icon đẹp -->
+                <div style="display:flex; justify-content:center; gap:20px; align-items:center; margin-top:8px;">
+                    <button id="player-prev" style="background:none; border:none; color:#ddd; font-size:26px; width:40px; height:40px;">⏮</button>
+                    <button id="player-pause" style="background:#fff; color:#000; border:none; width:62px; height:62px; border-radius:50%; font-size:26px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.4);">⏸</button>
+                    <button id="player-next" style="background:none; border:none; color:#ddd; font-size:26px; width:40px; height:40px;">⏭</button>
                 </div>
             </div>
         `;
         $("body").append(playerHTML);
 
-        // ... (phần còn lại giữ nguyên như code trước)
+        // Phần logic giữ nguyên (chỉ sửa next)
         const audio = window.__audio;
         const player = $("#music-player");
         const icon = $("#music-icon");
@@ -101,16 +103,18 @@ function playRandomMusic(){
             }
         });
 
+        // Next - Không ẩn player
         $("#player-next").on("click", function() {
             if (audio) audio.pause();
             playRandomMusic();
         });
 
+        // Prev
         $("#player-prev").on("click", function() {
             if (window.__played.length < 2) return;
             window.__played.pop();
             let prevUrl = window.__played[window.__played.length - 1];
-            let prevSong = window.__playlist.find(song => song.url === prevUrl);
+            let prevSong = window.__playlist.find(s => s.url === prevUrl);
             if (!prevSong) return;
             if (audio) audio.pause();
             window.__played.pop();
@@ -120,6 +124,7 @@ function playRandomMusic(){
             $("#player-title").text(prevSong.title);
         });
 
+        // Tiến trình nhạc
         audio.ontimeupdate = function() {
             if (!isDragging && audio.duration) {
                 let progress = (audio.currentTime / audio.duration) * 100;
