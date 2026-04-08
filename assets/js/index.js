@@ -47,11 +47,16 @@ function playRandomMusic(){
 `;
         $("body").append(iconHTML);
 
-        // Player chính
+        // ==================== PLAYER CHÍNH ====================
+        let playerIcon = "https://i.ibb.co/0jZ0Z0Z/music-note-icon.png";     // ← THAY LINK ICON NÀY (trong player)
+
         let playerHTML = `
             <div id="music-player" style="position:fixed; bottom:90px; right:20px; width:340px; background:rgba(20,20,20,0.98); color:#fff; border-radius:16px; padding:16px; z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.7); display:none;">
+                
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                    <div style="width:48px; height:48px; background:#333; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:26px;">♫</div>
+                    <div style="width:48px; height:48px; background:#222; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                        <img src="${playerIcon}" width="32" height="32" style="filter: brightness(0) invert(1);">
+                    </div>
                     <div style="flex:1; min-width:0;">
                         <div id="player-title" style="font-weight:600; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nextSong.title}</div>
                         <div id="player-status" style="font-size:12.5px; color:#aaa;">Đang phát</div>
@@ -68,27 +73,24 @@ function playRandomMusic(){
                 </div>
 
                 <div style="display:flex; justify-content:center; gap:24px; align-items:center;">
-                    <button id="player-prev" style="background:none; border:none; color:#bbb; font-size:26px;">⏮</button>
+                    <button id="player-prev" style="background:none; border:none; color:#bbb; font-size:28px;">⏮</button>
                     <button id="player-pause" style="background:#fff; color:#000; border:none; width:58px; height:58px; border-radius:50%; font-size:28px; display:flex; align-items:center; justify-content:center;">⏸</button>
-                    <button id="player-next" style="background:none; border:none; color:#bbb; font-size:26px;">⏭</button>
+                    <button id="player-next" style="background:none; border:none; color:#bbb; font-size:28px;">⏭</button>
                 </div>
             </div>
         `;
         $("body").append(playerHTML);
 
+        // ... (phần còn lại giữ nguyên như code trước)
         const audio = window.__audio;
         const player = $("#music-player");
         const icon = $("#music-icon");
         const progressBar = $("#progress-bar");
         let isDragging = false;
 
-        // Mở/đóng player bằng icon
         icon.on("click", () => player.fadeToggle(200));
-
-        // Nút Close → chỉ ẩn khi người dùng chủ động nhấn
         $("#player-close").on("click", () => player.fadeOut(200));
 
-        // Play / Pause
         $("#player-pause").on("click", function() {
             if (audio.paused) {
                 audio.play();
@@ -99,19 +101,25 @@ function playRandomMusic(){
             }
         });
 
-        // Next - CHUYỂN BÀI NHƯNG KHÔNG ẨN HỘP
         $("#player-next").on("click", function() {
-            if (audio) audio.pause();
-            playRandomMusic();   // Chuyển bài mới, hộp vẫn giữ nguyên
-        });
-
-        // Prev
-        $("#player-prev").on("click", function() {
             if (audio) audio.pause();
             playRandomMusic();
         });
 
-        // Cập nhật tiến trình
+        $("#player-prev").on("click", function() {
+            if (window.__played.length < 2) return;
+            window.__played.pop();
+            let prevUrl = window.__played[window.__played.length - 1];
+            let prevSong = window.__playlist.find(song => song.url === prevUrl);
+            if (!prevSong) return;
+            if (audio) audio.pause();
+            window.__played.pop();
+            window.__audio = new Audio(prevSong.url);
+            window.__audio.onended = playRandomMusic;
+            window.__audio.play();
+            $("#player-title").text(prevSong.title);
+        });
+
         audio.ontimeupdate = function() {
             if (!isDragging && audio.duration) {
                 let progress = (audio.currentTime / audio.duration) * 100;
@@ -123,9 +131,7 @@ function playRandomMusic(){
 
         progressBar.on("input", () => isDragging = true);
         progressBar.on("change", function() {
-            if (audio.duration) {
-                audio.currentTime = (progressBar.val() / 100) * audio.duration;
-            }
+            if (audio.duration) audio.currentTime = (progressBar.val() / 100) * audio.duration;
             isDragging = false;
         });
 
