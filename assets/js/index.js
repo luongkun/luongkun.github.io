@@ -32,28 +32,34 @@ function playRandomMusic(){
     window.__audio.onended = playRandomMusic;
 
      // ==================== MUSIC PLAYER KIỂU BẠN MUỐN ====================
-    window.__audio.play().then(() => {
+        window.__audio.play().then(() => {
         console.log(`✓ Đang phát: ${nextSong.title}`);
 
-        // Xóa player cũ nếu có
         $("#music-player").remove();
         $("#music-icon").remove();
 
-        // Tạo icon nhạc thu gọn (luôn hiển thị)
+        // ==================== THAY ICON Ở ĐÂY ====================
+        let iconFloating = "https://res.cloudinary.com/dhvnls5ys/image/upload/v1775552209/music-note-in-a-circle_jn7gqv.png";     // Icon nổi góc phải
+        let iconPause = "⏸";      // Icon Pause (bạn có thể thay bằng link ảnh)
+        let iconPlay  = "▶";       // Icon Play
+        let iconNext  = "⏭";      // Icon Next
+        let iconPrev  = "⏮";      // Icon Previous
+
+        // Icon nổi góc phải
         let iconHTML = `
-    <div id="music-icon" style="position:fixed; bottom:20px; right:20px; width:60px; height:60px; background:#111; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:10000; box-shadow:0 8px 25px rgba(255, 77, 148, 0.6); cursor:pointer; border:2px solid #ff4d94;">
-        <img src="https://res.cloudinary.com/dhvnls5ys/image/upload/v1775552209/music-note-in-a-circle_jn7gqv.png" width="34" height="34" style="filter: brightness(0) invert(1);">
-    </div>
-`;
+            <div id="music-icon" style="position:fixed; bottom:20px; right:20px; width:60px; height:60px; background:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:10000; box-shadow:0 6px 20px rgba(0,0,0,0.7); cursor:pointer; border:3px solid #fff;">
+                <img src="${iconFloating}" width="32" height="32" style="filter: brightness(0) invert(1);">
+            </div>
+        `;
         $("body").append(iconHTML);
 
-        // Player với icon đẹp hơn
+        // Player
         let playerHTML = `
             <div id="music-player" style="position:fixed; bottom:90px; right:20px; width:340px; background:rgba(20,20,20,0.98); color:#fff; border-radius:16px; padding:16px; z-index:9999; box-shadow:0 10px 30px rgba(0,0,0,0.7); display:none;">
                 
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
                     <div style="width:48px; height:48px; background:#222; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                        <img src="${floatingIcon}" width="32" height="32" style="filter: brightness(0) invert(1);">
+                        <img src="${iconFloating}" width="32" height="32" style="filter: brightness(0) invert(1);">
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div id="player-title" style="font-weight:600; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nextSong.title}</div>
@@ -70,17 +76,15 @@ function playRandomMusic(){
                     </div>
                 </div>
 
-                <!-- Nút điều khiển với icon đẹp -->
-                <div style="display:flex; justify-content:center; gap:20px; align-items:center; margin-top:8px;">
-                    <button id="player-prev" style="background:none; border:none; color:#ddd; font-size:26px; width:40px; height:40px;">⏮</button>
-                    <button id="player-pause" style="background:#fff; color:#000; border:none; width:62px; height:62px; border-radius:50%; font-size:26px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.4);">⏸</button>
-                    <button id="player-next" style="background:none; border:none; color:#ddd; font-size:26px; width:40px; height:40px;">⏭</button>
+                <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
+                    <button id="player-prev" style="background:none; border:none; color:#ddd; font-size:28px;">${iconPrev}</button>
+                    <button id="player-pause" style="background:#fff; color:#000; border:none; width:62px; height:62px; border-radius:50%; font-size:28px; display:flex; align-items:center; justify-content:center;">${iconPause}</button>
+                    <button id="player-next" style="background:none; border:none; color:#ddd; font-size:28px;">${iconNext}</button>
                 </div>
             </div>
         `;
         $("body").append(playerHTML);
 
-        // Phần logic giữ nguyên (chỉ sửa next)
         const audio = window.__audio;
         const player = $("#music-player");
         const icon = $("#music-icon");
@@ -93,20 +97,18 @@ function playRandomMusic(){
         $("#player-pause").on("click", function() {
             if (audio.paused) {
                 audio.play();
-                $(this).html("⏸");
+                $(this).html(iconPause);
             } else {
                 audio.pause();
-                $(this).html("▶");
+                $(this).html(iconPlay);
             }
         });
 
-        // Next - Không ẩn player
         $("#player-next").on("click", function() {
             if (audio) audio.pause();
             playRandomMusic();
         });
 
-        // Prev
         $("#player-prev").on("click", function() {
             if (window.__played.length < 2) return;
             window.__played.pop();
@@ -121,7 +123,6 @@ function playRandomMusic(){
             $("#player-title").text(prevSong.title);
         });
 
-        // Tiến trình nhạc
         audio.ontimeupdate = function() {
             if (!isDragging && audio.duration) {
                 let progress = (audio.currentTime / audio.duration) * 100;
