@@ -1,8 +1,5 @@
 !function(n){function t(n,t,e){let i=new Date(Date.now()+864e5*e).toUTCString();document.cookie=`${n}=${t}; expires=${i}; path=/`}function e(n){let t=document.cookie.split("; ").reduce((n,t)=>{let[e,i]=t.split("=");return n[e]=i,n},{});return t[n]}function i(n){let e=$(".ri-sun-line"),i=$(".ri-moon-clear-line");"light"===n?($("html").removeClass("dark").addClass("light"),i.slideUp(300,function(){e.slideDown(300)}),t("theme","light",365)):($("html").removeClass("light").addClass("dark"),e.slideUp(300,function(){i.slideDown(300)}),t("theme","dark",365))}let h=e("theme");"light"===h?i("light"):i("dark"),$("body").on("click",".change-theme",function(){let n=$("html").hasClass("dark");i(n?"light":"dark")});
-// Reset toast khi reload trang (dùng cho lúc test)
-if (window.location.href.includes("reload=1") || confirm("Reset thông báo nhạc?")) {
-    document.cookie = "toast=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-}
+
 // ==================== TOAST PROMPT + PHÁT NHẠC (SỬA LỖI) ====================
 if("close"===e("toast"))$("#toast-prompt").hide();
 
